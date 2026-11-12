@@ -43,7 +43,7 @@ library(haven)
 library(lavaan)
 knitr::opts_chunk$set(digits = 3)
 # Helpers retain useful numerical precision while making tables readable.
-tab <- function(x, caption = NULL) knitr::kable(x, digits = 3, caption = caption)
+tab <- function(x, caption = NULL) { if (is.matrix(x) && ncol(x)>9) x <- t(x); if (is.data.frame(x)) { if ("op" %in% names(x)) x$op <- paste0(intToUtf8(96),x$op,intToUtf8(96)); if ("pvalue" %in% names(x)) x$pvalue <- format.pval(x$pvalue,digits=3,eps=.001) }; rn <- if (is.data.frame(x) && any(c("Item","Model") %in% names(x))) FALSE else NA; knitr::kable(x, digits=3, caption=caption, row.names=rn) }
 parameters <- function(fit) {
 p <- parameterEstimates(fit, standardized = TRUE)
 p[p$op %in% c("=~", "~~"),
@@ -126,7 +126,7 @@ Fixing a marker loading sets the factor's units; it does not mean that the item 
 
 ## Three-item model: marker versus variance standardization
 
-The expression f =~ q03 + q04 + q05 declares a latent factor f measured by the three named items. The =~ operator specifies measurement, ~~ specifies a variance or covariance, NA* frees a default fixed loading, and 1* fixes a parameter to one. Both approaches below estimate the same covariance structure in different units.
+The expression f =~ q03 + q04 + q05 declares a latent factor f measured by the three named items. The =~ operator specifies measurement, `~~` specifies a variance or covariance, NA* frees a default fixed loading, and 1* fixes a parameter to one. Both approaches below estimate the same covariance structure in different units.
 
 ```{r}
 # Marker method: q03 loading fixed to 1; factor variance estimated.
@@ -205,7 +205,7 @@ These are guides, not a voting system. The number of indicators, estimator, samp
 
 ## Orthogonal and correlated models
 
-The seminar removes q02 and assigns q01, q03, q04, q05, and q08 to SPSS Anxiety (f1), and q06/q07 to Attribution Bias (f2). The f2 label is illustrative because of the source's inconsistent item wording. An orthogonal model fixes f1 ~~ f2 to zero. Its two-item factor additionally requires equal loadings. A correlated model estimates the factor covariance and permits unequal f2 loadings.
+The seminar removes q02 and assigns q01, q03, q04, q05, and q08 to SPSS Anxiety (f1), and q06/q07 to Attribution Bias (f2). The f2 label is illustrative because of the source's inconsistent item wording. An orthogonal model fixes f1 `~~` f2 to zero. Its two-item factor additionally requires equal loadings. A correlated model estimates the factor covariance and permits unequal f2 loadings.
 
 ```{r}
 m_orth <- '
